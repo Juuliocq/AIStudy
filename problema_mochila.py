@@ -1,9 +1,19 @@
 import numpy as np
 import random
-from copy import deepcopy
 from collections import deque
 
-LIMITE_MASSA = 20
+LIMITE_MASSA = 200          #Restrição de massa total que poderá ser levada na mochila.
+TAXA_MUTACAO = 0.1          #Percentual de indivíduos que sofrerão mutação ao ser realizado crossover.
+QUANTIDADE_POPULACAO = 10   #Quantidade de indivíduos na população.
+
+PONTO_CONVERGENCIA = 30     #Restrição de convergência do algoritmo (se os X últimos melhores individuos tiverem o mesmo)
+                            #valor da função objetivo, o algoritmo para.
+
+PERCENTUAL_MELHORES = 0.5   #Define qual o percentual em que a população será dividida entre os melhores
+                            #e os piores.
+
+                            #Caso a população tenha 4 indivíduos e o percentual seja 0.5 (50%)
+                            #2 indivíduos serão melhores e 2 piores.
 
 
 class Item:
@@ -14,23 +24,22 @@ class Item:
         self.valor = valor
         self.quantidade_limite = quantidade_limite
 
-    def probabilidade_inicial(self):
-        #Calcula e acumula as probabilidades acumuladas para decidir qual será a quantidade de itens inicial.
-        retorno = np.zeros((self.quantidade_limite + 1, 3))
+        self.probabilidade_inicial = np.zeros((self.quantidade_limite + 1, 3))
+        self.calcula_probabilidade_inicial()
+
+    def calcula_probabilidade_inicial(self):
         probabilidade_acumulada = 0
         probabilidade = 1 / (self.quantidade_limite + 1)
 
         for qtd in range(self.quantidade_limite + 1):
             probabilidade_acumulada = probabilidade + probabilidade_acumulada
-            retorno[qtd] = [qtd, probabilidade, probabilidade_acumulada]
-
-        return retorno
+            self.probabilidade_inicial[qtd] = [qtd, probabilidade, probabilidade_acumulada]
 
     def get_qtd_inicial(self):
-        #Randomico para decidir qual será a quantidade inicial do item com base no retorno do método probabilidade_inicial.
+        #Randomico para decidir qual será a quantidade inicial do item com base no probabilidade_inicial.
         rdn = random.random()
 
-        probabilidades = self.probabilidade_inicial()
+        probabilidades = self.probabilidade_inicial
 
         for i in range(0, len(probabilidades) + 1):
             if i == len(probabilidades) - 1:
@@ -43,13 +52,13 @@ class Item:
 class Cromossomo:
 
     def __init__(self):
-        self.item1 = Item(1, 3, 40, 3)
+        self.item1 = Item(1, 3, 40, 30)
         self.qtd_item1 = self.item1.get_qtd_inicial()
 
-        self.item2 = Item(2, 5, 100, 2)
+        self.item2 = Item(2, 5, 100, 20)
         self.qtd_item2 = self.item2.get_qtd_inicial()
 
-        self.item3 = Item(3, 2, 50, 5)
+        self.item3 = Item(3, 2, 50, 50)
         self.qtd_item3 = self.item3.get_qtd_inicial()
 
         self.probabilidade_acumulada = 0
@@ -134,9 +143,9 @@ def get_melhor(populacao):
     return melhor
 
 
-def cross_over(populacao, percentual_melhores):
+def cross_over(populacao):
     #Define qual o % de melhores/piores
-    percentual_melhores = percentual_melhores / 100
+    percentual_melhores = PERCENTUAL_MELHORES / 100
 
     percentual_por_individuo = 1 / len(populacao)
     percentual_acumulado = 0
@@ -146,7 +155,7 @@ def cross_over(populacao, percentual_melhores):
 
     #Conta a quantidade de melhores e piores.
     for i in range(0, len(populacao)):
-        if percentual_acumulado <= percentual_melhores:
+        if percentual_acumulado <= PERCENTUAL_MELHORES:
             qtd_melhores += 1
         else:
             qtd_piores += 1
@@ -210,36 +219,26 @@ def cross_over(populacao, percentual_melhores):
             pai_pior = individuo
             break
 
-    #remove os pais escolhidos da lista
-    populacao_ordenada.remove(pai_melhor)
-    populacao_ordenada.remove(pai_pior)
-
     #copia os pais para sofrer crossover
-    copia_melhor = deepcopy(pai_melhor)
-    copia_pior = deepcopy(pai_pior)
-    valido = False
+    cross_over_valido = False
 
-    while not valido:
+    while not cross_over_valido:
         rnd = random.random()
 
         #Decide qual gene sofrerá crossover
         if rnd < 0.3333:
-            copia_melhor.qtd_item1, copia_pior.qtd_item1 = copia_pior.qtd_item1, copia_melhor.qtd_item1
+            pai_melhor.qtd_item1, pai_pior.qtd_item1 = pai_pior.qtd_item1, pai_melhor.qtd_item1
 
         elif rnd < 0.6666:
-            copia_melhor.qtd_item2, copia_pior.qtd_item2 = copia_pior.qtd_item2, copia_melhor.qtd_item2
+            pai_melhor.qtd_item2, pai_pior.qtd_item2 = pai_pior.qtd_item2, pai_melhor.qtd_item2
 
         else:
-            copia_melhor.qtd_item3, copia_pior.qtd_item3 = copia_pior.qtd_item3, copia_melhor.qtd_item3
+            pai_melhor.qtd_item3, pai_pior.qtd_item3 = pai_pior.qtd_item3, pai_melhor.qtd_item3
 
         #Se o resultado do crossover for infactível, refaz o crossover.
-        valido = copia_melhor.get_peso_total() <= LIMITE_MASSA and copia_pior.get_peso_total() <= LIMITE_MASSA
+        cross_over_valido = pai_melhor.get_peso_total() <= LIMITE_MASSA and pai_pior.get_peso_total() <= LIMITE_MASSA
 
-    mutacao(copia_melhor, copia_pior)
-
-    #Adiciona o pai melhor e pior com crossover e potencialmente mutação à população.
-    populacao_ordenada.append(copia_melhor)
-    populacao_ordenada.append(copia_pior)
+    mutacao(pai_melhor, pai_pior)
 
     return populacao_ordenada
 
@@ -248,7 +247,7 @@ def mutacao(individuo1, individuo2):
     rnd = random.random()
 
     #chance de 50% so sofrer mutação
-    if rnd <= 0.5:
+    if rnd <= TAXA_MUTACAO:
         rnd = random.random()
 
         if rnd <= 0.5:
@@ -259,13 +258,12 @@ def mutacao(individuo1, individuo2):
 
 def main():
     fitness = 0
-    ultimos = deque(maxlen=30)
-    populacao = getPopulacao(4)
-    ultimos.append(get_melhor(populacao))
+    ultimos = deque(maxlen=PONTO_CONVERGENCIA)
+    populacao = getPopulacao(QUANTIDADE_POPULACAO)
 
     while True:
         fitness += 1
-        populacao = cross_over(populacao, 50)
+        populacao = cross_over(populacao)
         ultimos.append(get_melhor(populacao))
 
         lista_ultimos = list(ultimos)
@@ -273,7 +271,7 @@ def main():
         if len(lista_ultimos) < 3:
             continue
 
-        if (sum(individuo.get_valor_total() for individuo in lista_ultimos) / 30) == lista_ultimos[0].get_valor_total():
+        if (sum(individuo.get_valor_total() for individuo in lista_ultimos) / PONTO_CONVERGENCIA) == lista_ultimos[0].get_valor_total():
             break
 
     melhor = get_melhor(list(ultimos))
