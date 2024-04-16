@@ -268,7 +268,7 @@ def main():
 
         lista_ultimos = list(ultimos)
 
-        if len(lista_ultimos) < 3:
+        if len(lista_ultimos) < PONTO_CONVERGENCIA:
             continue
 
         if (sum(individuo.get_valor_total() for individuo in lista_ultimos) / PONTO_CONVERGENCIA) == lista_ultimos[0].get_valor_total():
@@ -278,6 +278,7 @@ def main():
 
     print("ACHEI EM: ", fitness, "PASSOS")
     print(melhor.get_valor_total())
+    print(melhor.get_peso_total())
 
 if __name__ == '__main__':
     main()
