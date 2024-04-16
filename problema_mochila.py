@@ -145,8 +145,6 @@ def get_melhor(populacao):
 
 def cross_over(populacao):
     #Define qual o % de melhores/piores
-    percentual_melhores = PERCENTUAL_MELHORES / 100
-
     percentual_por_individuo = 1 / len(populacao)
     percentual_acumulado = 0
 
