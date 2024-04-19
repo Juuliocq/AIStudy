@@ -6,7 +6,7 @@ LIMITE_MASSA = 200          #Restrição de massa total que poderá ser levada n
 TAXA_MUTACAO = 0.1          #Percentual de indivíduos que sofrerão mutação ao ser realizado crossover.
 QUANTIDADE_POPULACAO = 10   #Quantidade de indivíduos na população.
 
-PONTO_CONVERGENCIA = 30     #Restrição de convergência do algoritmo (se os X últimos melhores individuos tiverem o mesmo)
+PONTO_CONVERGENCIA = 300     #Restrição de convergência do algoritmo (se os X últimos melhores individuos tiverem o mesmo)
                             #valor da função objetivo, o algoritmo para.
 
 PERCENTUAL_MELHORES = 0.5   #Define qual o percentual em que a população será dividida entre os melhores
