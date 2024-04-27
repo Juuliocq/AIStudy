@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import random
 from collections import deque
@@ -8,6 +10,7 @@ from problema_mochila.problema.Cromossomo import Cromossomo
 class Algoritmo:
 
     melhor: Cromossomo
+    tempo_execucao = 0
 
     def __init__(self, limite_massa,
                  taxa_mutacao, quantidade_populacao,
@@ -189,6 +192,8 @@ class Algoritmo:
     def iniciar(self):
         fitness = 0
         ultimos = deque(maxlen=self.PONTO_CONVERGENCIA)
+
+        start_time = time.time()
         populacao = self.getPopulacao()
 
         while True:
@@ -206,4 +211,5 @@ class Algoritmo:
                 break
 
         self.melhor = self.get_melhor(list(ultimos))
+        self.tempo_execucao = (time.time() - start_time)
 

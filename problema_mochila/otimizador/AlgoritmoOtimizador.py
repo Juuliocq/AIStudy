@@ -7,6 +7,10 @@ from problema_mochila.problema.Algoritmo import Algoritmo
 
 class AlgoritmoOtimizador:
 
+    melhor_taxa_mutacao = 0
+    melhor_populacao = 0
+    melhor_convergencia = 0
+
     def __init__(self, limite_massa, populacao_maxima,
                  convergencia_maxima,
                  massa_item1, valor_item1, qtd_item1,
@@ -14,7 +18,7 @@ class AlgoritmoOtimizador:
                  massa_item3, valor_item3, qtd_item3):
 
         self.TAXA_MUTACAO = 0.1
-        self.QUANTIDADE_POPULACAO = 4
+        self.QUANTIDADE_POPULACAO = 6
         self.FITNESS_TOTAL = 50
         self.PERCENTUAL_MELHORES = 0.5
 
@@ -58,7 +62,7 @@ class AlgoritmoOtimizador:
             if melhor is None:
                 melhor = individuo
             else:
-                if individuo.f_objetivo() > melhor.f_objetivo():
+                if individuo.f_objetivo() < melhor.f_objetivo():
                     melhor = individuo
 
         return melhor
@@ -85,7 +89,6 @@ class AlgoritmoOtimizador:
 
         #Ordena em ordem reversa por valor total (função objetivo.)
         populacao_ordenada = sorted(populacao, key=lambda individuo: individuo.f_objetivo())
-        populacao_ordenada.reverse()
 
         #Adiciona na lista de melhores ou piores.
         for individuo in populacao_ordenada:
@@ -101,14 +104,14 @@ class AlgoritmoOtimizador:
 
         #Calcula as probabilidades acumuladas dos melhores e piores.
         for individuo in melhores:
-            probabilidade = (individuo.f_objetivo() / total_melhores)
+            probabilidade = ((individuo.f_objetivo() / total_melhores) - 1) * -1
             probabilidade_acumulada = probabilidade + probabilidade_acumulada
             individuo.set_probabilidade_acumulada(probabilidade_acumulada)
 
         probabilidade_acumulada = 0
 
         for individuo in piores:
-            probabilidade = (individuo.f_objetivo() / total_piores)
+            probabilidade = ((individuo.f_objetivo() / total_piores) - 1) * -1
             probabilidade_acumulada = probabilidade + probabilidade_acumulada
             individuo.set_probabilidade_acumulada(probabilidade_acumulada)
 
@@ -198,4 +201,8 @@ class AlgoritmoOtimizador:
         print("Convergência: ", melhor.ponto_convergencia)
         print("Taxa de mutação: ", melhor.taxa_mutacao)
         print("População: ", melhor.qtd_populacao)
+
+        self.melhor_populacao = melhor.qtd_populacao
+        self.melhor_convergencia = melhor.ponto_convergencia
+        self.melhor_taxa_mutacao = melhor.taxa_mutacao
 

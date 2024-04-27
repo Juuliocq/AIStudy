@@ -57,7 +57,7 @@ class CromossomoOtimizador:
 
 
     def f_objetivo(self):
-        return self.algoritmoProblema.melhor_valor()
+        return (self.algoritmoProblema.melhor_valor() * 1) - (self.algoritmoProblema.tempo_execucao * -1)
 
     def mutar(self):
 
