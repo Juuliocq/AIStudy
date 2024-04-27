@@ -324,7 +324,7 @@
     <property name="title">
      <string>Melhores Variáveis</string>
     </property>
-    <widget class="QPushButton" name="btn_testar">
+    <widget class="QPushButton" name="btn_testar_melhor">
      <property name="geometry">
       <rect>
        <x>80</x>
@@ -419,7 +419,7 @@
     <property name="title">
      <string>Piores Variáveis</string>
     </property>
-    <widget class="QPushButton" name="btn_testar_2">
+    <widget class="QPushButton" name="btn_testar_pior">
      <property name="geometry">
       <rect>
        <x>80</x>
